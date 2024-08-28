@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres:15
+    container_name: thr33books-db
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - PGUSER=${POSTGRES_USER}
+      - POSTGRES_DE=${POSTGRES_DB}
+    volumes:
+      - pgData:/var/lib/postgresql/data/
+    ports:
+      - "5431:5432"
+    networks:
+      - thr33Net
+    healthcheck:
+      test: "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"
+      timeout: 60s
+      retries: 5
+      interval: 20s
+
+  app:
+    build:
+      context: .
+    container_name: thr33books-api
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app
+    networks:
+      - thr33Net
+    env_file:
+      - .env
+    command: >
+      bash -c "python manage.py makemigrations &&
+               python manage.py migrate &&
+               python manage.py runserver 0.0.0.0:8000"
+volumes:
+  pgData:
+networks:
+  thr33Net:
