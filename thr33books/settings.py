@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     # Custom Apps
     "users",
+    "api",
 ]
 
 MIDDLEWARE = [
